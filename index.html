@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7-р анги: Математик & Физикийн Даалгаврын Систем</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX CSS & JS for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .level-badge-23 { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .level-badge-45 { background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        .level-badge-67 { background-color: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+        .level-badge-8  { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Navigation & Header -->
+    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-indigo-700 rounded-xl">
+                        <i class="fa-solid font-bold text-2xl fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold">7-р Анги: Сургалтын Даалгаврын Систем</h1>
+                        <p class="text-indigo-200 text-xs sm:text-sm">Математик ба Физикийн интерактив даалгаврын сан</p>
+                    </div>
+                </div>
+
+                <!-- Stats summary badge -->
+                <div class="flex items-center space-x-4 bg-indigo-800/80 p-2.5 rounded-xl border border-indigo-700 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-trophy text-amber-400 text-lg"></i>
+                        <div>
+                            <div class="text-xs text-indigo-300">Нийт оноо</div>
+                            <div id="user-score" class="font-bold text-base">0</div>
+                        </div>
+                    </div>
+                    <div class="h-8 w-px bg-indigo-700"></div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+                        <div>
+                            <div class="text-xs text-indigo-300">Бодсон</div>
+                            <div id="solved-count" class="font-bold text-base">0 / 0</div>
+                        </div>
+                    </div>
+                    <button onclick="toggleAddTaskModal(true)" class="ml-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden sm:inline">Даалгавар нэмэх</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        
+        <!-- Subject Selection Tabs -->
+        <div class="flex flex-wrap gap-3 mb-6">
+            <button onclick="switchSubject('math')" id="tab-math" class="flex-1 sm:flex-none px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-3 transition-all text-base shadow-sm border">
+                <i class="fa-solid fa-calculator text-lg"></i>
+                <div class="text-left">
+                    <div class="text-xs font-normal opacity-80">7-р анги</div>
+                    <div>Математик: Энгийн бутархай</div>
+                </div>
+            </button>
+            <button onclick="switchSubject('physics')" id="tab-physics" class="flex-1 sm:flex-none px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-3 transition-all text-base shadow-sm border">
+                <i class="fa-solid fa-atom text-lg"></i>
+                <div class="text-left">
+                    <div class="text-xs font-normal opacity-80">7-р анги</div>
+                    <div>Физик: Биеийн ерөнхий шинж чанар</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- Level Filter Buttons -->
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1 hidden lg:inline">Түвшин:</span>
+                <button onclick="filterLevel('all')" id="lvl-all" class="level-btn px-3.5 py-1.5 text-xs sm:text-sm rounded-lg font-medium transition-all">Бүх түвшин</button>
+                <button onclick="filterLevel('2-3 түвшин')" id="lvl-23" class="level-btn px-3.5 py-1.5 text-xs sm:text-sm rounded-lg font-medium transition-all">2-3 түвшин</button>
+                <button onclick="filterLevel('4-5 түвшин')" id="lvl-45" class="level-btn px-3.5 py-1.5 text-xs sm:text-sm rounded-lg font-medium transition-all">4-5 түвшин</button>
+                <button onclick="filterLevel('6-7 түвшин')" id="lvl-67" class="level-btn px-3.5 py-1.5 text-xs sm:text-sm rounded-lg font-medium transition-all">6-7 түвшин</button>
+                <button onclick="filterLevel('8 түвшин')" id="lvl-8" class="level-btn px-3.5 py-1.5 text-xs sm:text-sm rounded-lg font-medium transition-all">8 түвшин</button>
+            </div>
+
+            <!-- Additional Utilities -->
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="search-input" oninput="renderTasks()" placeholder="Даалгавар хайх..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button onclick="resetProgress()" class="text-xs text-rose-600 hover:text-rose-700 font-medium px-3 py-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all border border-rose-200 flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Ахиц арилгах</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Task Cards Grid Container -->
+        <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Dynamic Task Cards will be inserted here -->
+        </div>
+
+        <!-- Empty state message -->
+        <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3"></i>
+            <h3 class="text-lg font-bold text-slate-700">Даалгавар олдсонгүй</h3>
+            <p class="text-slate-500 text-sm mt-1">Сонгосон түвшин эсвэл хайлтад тохирох бодлого одоогоор алга байна.</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            <p>7-р анги: Математик ("Энгийн бутархай") & Физик ("Биеийн ерөнхий шинж чанар") Боловсролын систем</p>
+        </div>
+    </footer>
+
+    <!-- Add Task Modal (For Teachers/Students) -->
+    <div id="add-task-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border border-slate-100">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-indigo-600"></i>
+                    Шинэ даалгавар байршуулах
+                </h3>
+                <button onclick="toggleAddTaskModal(false)" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="add-task-form" onsubmit="handleAddTask(event)" class="space-y-4 mt-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Хичээл</label>
+                    <select id="modal-subject" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="math">Математик (Энгийн бутархай)</option>
+                        <option value="physics">Физик (Биеийн ерөнхий шинж чанар)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Түвшин</label>
+                    <select id="modal-level" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="2-3 түвшин">2-3 түвшин</option>
+                        <option value="4-5 түвшин">4-5 түвшин</option>
+                        <option value="6-7 түвшин">6-7 түвшин</option>
+                        <option value="8 түвшин">8 түвшин</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Даалгаврын агуулга / Бодлогын өгөгдөл</label>
+                    <textarea id="modal-question" required rows="3" placeholder="Бодлогын бичвэр... (Математик томьёог \frac{a}{b} хэлбэрээр бичиж болно)" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">А сонголт</label>
+                        <input type="text" id="modal-opt-a" required placeholder="Сонголт А" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Б сонголт</label>
+                        <input type="text" id="modal-opt-b" required placeholder="Сонголт Б" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">В сонголт</label>
+                        <input type="text" id="modal-opt-c" required placeholder="Сонголт В" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Г сонголт</label>
+                        <input type="text" id="modal-opt-d" required placeholder="Сонголт Г" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Зөв хариулт (Яг таарах утга)</label>
+                    <input type="text" id="modal-correct" required placeholder="Жишээ нь: А сонголт эсвэл яг хариу утга" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Зөвлөмж / Бодолтын алхам</label>
+                    <textarea id="modal-solution" rows="2" placeholder="Даалгаврыг бодох аргачлал, зөвлөмж..." class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+                    <button type="button" onclick="toggleAddTaskModal(false)" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 font-medium">Цуцлах</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow transition-all">Хадгалах</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Initial Default Tasks Data Setup
+        const initialTasks = [
+            // --- MATHEMATICS TASKS ---
+            {
+                id: 'm-1',
+                subject: 'math',
+                level: '2-3 түвшин',
+                question: 'Дараах ижил хуваарьтай бутархайн нийлбэрийг олно уу: $$\\frac{3}{7} + \\frac{2}{7}$$',
+                options: ['\\frac{5}{7}', '\\frac{1}{7}', '\\frac{5}{14}', '\\frac{6}{7}'],
+                correct: '\\frac{5}{7}',
+                solution: 'Ижил хуваарьтай бутархайг нэмэхдээ хуваарийг хэвээр үлдээж, хүртвэрүүдийг нэмнэ: \\frac{3+2}{7} = \\frac{5}{7}.',
+                points: 10
+            },
+            {
+                id: 'm-2',
+                subject: 'math',
+                level: '4-5 түвшин',
+                question: '$$\\frac{18}{24}$$ бутархайг хамгийн их ерөнхий хуваагчаар нь хурааж, эгэл бутархай болгоно уу.',
+                options: ['\\frac{3}{4}', '\\frac{2}{3}', '\\frac{9}{12}', '\\frac{4}{5}'],
+                correct: '\\frac{3}{4}',
+                solution: 'Хүртвэр 18 ба хуваарь 24-ийн ХИЕХ нь 6 юм. Хүртвэр ба хуваарийг 6-д хуваавал: \\frac{18 \\div 6}{24 \\div 6} = \\frac{3}{4}.',
+                points: 20
+            },
+            {
+                id: 'm-3',
+                subject: 'math',
+                level: '6-7 түвшин',
+                question: 'Холимог бутархайн нийлбэрийг олно уу: $$2\\frac{1}{3} + 1\\frac{1}{2}$$',
+                options: ['3\\frac{5}{6}', '3\\frac{2}{5}', '4\\frac{1}{6}', '3\\frac{1}{6}'],
+                correct: '3\\frac{5}{6}',
+                solution: '1) Бүхэл хэсгүүдийг нэмнэ: 2 + 1 = 3.\n2) Бутархай хэсгүүдийг ижил хуваарьтай болгоно (ерөнхий хуваарь 6): \\frac{1}{3} + \\frac{1}{2} = \\frac{2}{6} + \\frac{3}{6} = \\frac{5}{6}.\n3) Нэгтгэвэл: 3\\frac{5}{6}.',
+                points: 30
+            },
+            {
+                id: 'm-4',
+                subject: 'math',
+                level: '8 түвшин',
+                question: 'Дараах илэрхийллийн утгыг олно уу: $$\\left(\\frac{3}{4} \\times \\frac{8}{9}\\right) \\div \\frac{2}{3}$$',
+                options: ['1', '\\frac{3}{4}', '\\frac{1}{2}', '\\frac{4}{3}'],
+                correct: '1',
+                solution: '1) Эхлээд хаалтан доторх үржүүлэхийг бодно: \\frac{3 \\times 8}{4 \\times 9} = \\frac{24}{36} = \\frac{2}{3}.\n2) Хуваах үйлдэл хийнэ: \\frac{2}{3} \\div \\frac{2}{3} = \\frac{2}{3} \\times \\frac{3}{2} = 1.',
+                points: 40
+            },
+
+            // --- PHYSICS TASKS ---
+            {
+                id: 'p-1',
+                subject: 'physics',
+                level: '2-3 түвшин',
+                question: 'Бодисын хатуу төлөвт орших биеийн үндсэн шинж чанар аль нь вэ?',
+                options: [
+                    'Тодорхой хэлбэр дүрс болон эзлэхүүнтэй',
+                    'Зөвхөн агуулж буй савны хэлбэрийг дагадаг',
+                    'Хэлбэртэй боловч эзлэхүүнгүй байна',
+                    'Бүх орон зайг бүрэн дүүргэж тэлдэг'
+                ],
+                correct: 'Тодорхой хэлбэр дүрс болон эзлэхүүнтэй',
+                solution: 'Хатуу биеийн жижиг хэсгүүд нь хоорондоо нягт байрласан тул тодорхой хэлбэр дүрс ба эзлэхүүнийг хадгалж байдаг.',
+                points: 10
+            },
+            {
+                id: 'p-2',
+                subject: 'physics',
+                level: '4-5 түвшин',
+                question: '$3.5 \\text{ кг}$ массыг грамм (г) нэгжид шилжүүлбэл хэд болох вэ?',
+                options: ['3500 г', '350 г', '35000 г', '0.0035 г'],
+                correct: '3500 г',
+                solution: '$1 \\text{ кг} = 1000 \\text{ г}$ байдаг. Тиймээс $3.5 \\times 1000 = 3500 \\text{ г}$ болно.',
+                points: 20
+            },
+            {
+                id: 'p-3',
+                subject: 'physics',
+                level: '6-7 түвшин',
+                question: '$V = 200 \\text{ см}^3$ эзлэхүүнтэй, $m = 1600 \\text{ г}$ мастай металл биеийн нягтыг ($\\rho$) олно уу.',
+                options: ['8 г/см³', '0.125 г/см³', '3200 г/см³', '1800 г/см³'],
+                correct: '8 г/см³',
+                solution: 'Нягтыг олох томьёо: $$\\rho = \\frac{m}{V}$$\nӨгөгдлийг орлуулбал: $$\\rho = \\frac{1600 \\text{ г}}{200 \\text{ см}^3} = 8 \\text{ г/см}^3$$.',
+                points: 30
+            },
+            {
+                id: 'p-4',
+                subject: 'physics',
+                level: '8 түвшин',
+                question: 'Алтны нягт $\\rho = 19.3 \\text{ г/см}^3$ ба $V = 50 \\text{ см}^3$ эзлэхүүнтэй алтан гулдмайн массыг олно уу.',
+                options: ['965 г', '386 г', '2.59 г', '96.5 г'],
+                correct: '965 г',
+                solution: 'Масс олох томьёо: $$m = \\rho \\times V$$\nӨгөгдлийг орлуулбал: $$m = 19.3 \\text{ г/см}^3 \\times 50 \\text{ см}^3 = 965 \\text{ г}$$.',
+                points: 40
+            }
+        ];
+
+        // State Management
+        let currentSubject = 'math'; // 'math' or 'physics'
+        let currentLevel = 'all';    // 'all', '2-3 түвшин', '4-5 түвшин', '6-7 түвшин', '8 түвшин'
+        let tasks = [];
+        let userProgress = {};       // { taskId: { solved: true/false, userAns: '' } }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocalStorage();
+            renderSubjectTabs();
+            renderLevelButtons();
+            renderTasks();
+            updateStats();
+        });
+
+        function loadLocalStorage() {
+            const storedTasks = localStorage.getItem('edu_tasks_7th');
+            if (storedTasks) {
+                try {
+                    tasks = JSON.parse(storedTasks);
+                } catch (e) {
+                    tasks = [...initialTasks];
+                }
+            } else {
+                tasks = [...initialTasks];
+                localStorage.setItem('edu_tasks_7th', JSON.stringify(tasks));
+            }
+
+            const storedProgress = localStorage.getItem('edu_progress_7th');
+            if (storedProgress) {
+                try {
+                    userProgress = JSON.parse(storedProgress);
+                } catch (e) {
+                    userProgress = {};
+                }
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem('edu_progress_7th', JSON.stringify(userProgress));
+            updateStats();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('edu_tasks_7th', JSON.stringify(tasks));
+        }
+
+        // Navigation & Filter Switches
+        function switchSubject(sub) {
+            currentSubject = sub;
+            renderSubjectTabs();
+            renderTasks();
+        }
+
+        function filterLevel(lvl) {
+            currentLevel = lvl;
+            renderLevelButtons();
+            renderTasks();
+        }
+
+        function renderSubjectTabs() {
+            const mathBtn = document.getElementById('tab-math');
+            const physBtn = document.getElementById('tab-physics');
+
+            if (currentSubject === 'math') {
+                mathBtn.className = "flex-1 sm:flex-none px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-3 transition-all text-base shadow-md bg-indigo-600 text-white border-indigo-600";
+                physBtn.className = "flex-1 sm:flex-none px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-3 transition-all text-base bg-white text-slate-600 hover:bg-slate-100 border-slate-200";
+            } else {
+                physBtn.className = "flex-1 sm:flex-none px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-3 transition-all text-base shadow-md bg-indigo-600 text-white border-indigo-600";
+                mathBtn.className = "flex-1 sm:flex-none px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-3 transition-all text-base bg-white text-slate-600 hover:bg-slate-100 border-slate-200";
+            }
+        }
+
+        function renderLevelButtons() {
+            const levels = ['all', '2-3 түвшин', '4-5 түвшин', '6-7 түвшин', '8 түвшин'];
+            const idMap = {
+                'all': 'lvl-all',
+                '2-3 түвшин': 'lvl-23',
+                '4-5 түвшин': 'lvl-45',
+                '6-7 түвшин': 'lvl-67',
+                '8 түвшин': 'lvl-8'
+            };
+
+            levels.forEach(lvl => {
+                const btn = document.getElementById(idMap[lvl]);
+                if (btn) {
+                    if (currentLevel === lvl) {
+                        btn.className = "level-btn px-3.5 py-1.5 text-xs sm:text-sm rounded-lg font-bold bg-slate-900 text-white shadow-sm";
+                    } else {
+                        btn.className = "level-btn px-3.5 py-1.5 text-xs sm:text-sm rounded-lg font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+                    }
+                }
+            });
+        }
+
+        // Helper to format level badge
+        function getLevelBadgeClass(level) {
+            switch (level) {
+                case '2-3 түвшин': return 'level-badge-23';
+                case '4-5 түвшин': return 'level-badge-45';
+                case '6-7 түвшин': return 'level-badge-67';
+                case '8 түвшин': return 'level-badge-8';
+                default: return 'bg-slate-100 text-slate-700';
+            }
+        }
+
+        // Render Tasks Grid
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            const emptyState = document.getElementById('empty-state');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+
+            const filtered = tasks.filter(t => {
+                const matchSubject = t.subject === currentSubject;
+                const matchLevel = currentLevel === 'all' || t.level === currentLevel;
+                const matchSearch = t.question.toLowerCase().includes(searchVal) || t.level.toLowerCase().includes(searchVal);
+                return matchSubject && matchLevel && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            container.innerHTML = filtered.map(task => {
+                const prog = userProgress[task.id] || {};
+                const isSolved = prog.solved === true;
+                const userChoice = prog.userAns || '';
+
+                return `
+                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden">
+                        <!-- Top Header info -->
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <span class="px-2.5 py-1 rounded-md text-xs font-bold ${getLevelBadgeClass(task.level)}">
+                                    ${task.level}
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-semibold text-slate-400">Оноо: ${task.points}</span>
+                                    ${isSolved ? '<span class="text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><i class="fa-solid fa-check"></i> Бодсон</span>' : ''}
+                                </div>
+                            </div>
+
+                            <!-- Question statement -->
+                            <div class="text-slate-800 text-base font-medium mb-5 leading-relaxed katex-render">
+                                ${task.question}
+                            </div>
+
+                            <!-- Options list -->
+                            <div class="space-y-2 mb-5">
+                                ${task.options.map((opt, idx) => {
+                                    const optionId = `opt-${task.id}-${idx}`;
+                                    const isSelected = userChoice === opt;
+                                    let btnStyle = "border-slate-200 bg-slate-50 hover:bg-indigo-50/50 hover:border-indigo-200 text-slate-700";
+                                    
+                                    if (isSelected) {
+                                        if (isSolved) {
+                                            btnStyle = "border-emerald-500 bg-emerald-50 text-emerald-800 font-semibold ring-1 ring-emerald-500";
+                                        } else {
+                                            btnStyle = "border-rose-500 bg-rose-50 text-rose-800 font-semibold ring-1 ring-rose-500";
+                                        }
+                                    }
+
+                                    return `
+                                        <label for="${optionId}" class="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${btnStyle}">
+                                            <input type="radio" id="${optionId}" name="group-${task.id}" value="${escapeHtml(opt)}" ${isSelected ? 'checked' : ''} ${isSolved ? 'disabled' : ''} onchange="selectAnswer('${task.id}', this.value)" class="mt-1 text-indigo-600 focus:ring-indigo-500">
+                                            <span class="text-sm leading-snug katex-render flex-grow">${opt}</span>
+                                        </label>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Action controls -->
+                        <div class="pt-4 border-t border-slate-100 flex flex-col gap-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <button onclick="checkTaskAnswer('${task.id}')" ${isSolved ? 'disabled' : ''} class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-sm">
+                                    ${isSolved ? 'Зөв бодсон' : 'Хариулт шалгах'}
+                                </button>
+                                <button onclick="toggleSolution('${task.id}')" class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition-all flex items-center gap-1.5" title="Зөвлөмж / Бодолт">
+                                    <i class="fa-regular fa-lightbulb text-amber-500"></i>
+                                    <span>Зөвлөмж</span>
+                                </button>
+                            </div>
+
+                            <!-- Solution / Hint Box (Hidden by default) -->
+                            <div id="solution-${task.id}" class="hidden p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-amber-900 mt-1 space-y-1">
+                                <div class="font-bold flex items-center gap-1 text-amber-800">
+                                    <i class="fa-solid fa-circle-info"></i> Бодолтын алхам:
+                                </div>
+                                <div class="katex-render whitespace-pre-line leading-relaxed">${task.solution || 'Бодолтын алхам одоогоор бэлэн бус байна.'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Render KaTeX math expressions after innerHTML update
+            setTimeout(renderMath, 50);
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function renderMath() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError : false
+                });
+            }
+        }
+
+        // Task Interactions
+        function selectAnswer(taskId, value) {
+            if (!userProgress[taskId]) {
+                userProgress[taskId] = {};
+            }
+            userProgress[taskId].userAns = value;
+        }
+
+        function checkTaskAnswer(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            const prog = userProgress[taskId];
+
+            if (!prog || !prog.userAns) {
+                alert('Илгээхээс өмнө нэг сонголт хийнэ үү!');
+                return;
+            }
+
+            if (prog.userAns === task.correct) {
+                prog.solved = true;
+                playAudioNotification(true);
+            } else {
+                prog.solved = false;
+                playAudioNotification(false);
+                alert('Хариулт буруу байна. Зөвлөмжийг ашиглан дахин оролдоно уу!');
+            }
+
+            saveProgress();
+            renderTasks();
+        }
+
+        function toggleSolution(taskId) {
+            const solBox = document.getElementById(`solution-${taskId}`);
+            if (solBox) {
+                solBox.classList.toggle('hidden');
+            }
+        }
+
+        function updateStats() {
+            const currentSubTasks = tasks.filter(t => t.subject === currentSubject);
+            const totalCount = currentSubTasks.length;
+            
+            let solvedCount = 0;
+            let totalPoints = 0;
+
+            tasks.forEach(t => {
+                if (userProgress[t.id] && userProgress[t.id].solved) {
+                    totalPoints += (t.points || 10);
+                    if (t.subject === currentSubject) {
+                        solvedCount++;
+                    }
+                }
+            });
+
+            document.getElementById('user-score').innerText = totalPoints;
+            document.getElementById('solved-count').innerText = `${solvedCount} / ${totalCount}`;
+        }
+
+        function resetProgress() {
+            if (confirm('Та бүх бодсон ахицаа арилгахдаа итгэлтэй байна уу?')) {
+                userProgress = {};
+                saveProgress();
+                renderTasks();
+            }
+        }
+
+        // Add New Task (Teacher dynamic form)
+        function toggleAddTaskModal(show) {
+            const modal = document.getElementById('add-task-modal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function handleAddTask(e) {
+            e.preventDefault();
+            const subject = document.getElementById('modal-subject').value;
+            const level = document.getElementById('modal-level').value;
+            const question = document.getElementById('modal-question').value;
+            const optA = document.getElementById('modal-opt-a').value;
+            const optB = document.getElementById('modal-opt-b').value;
+            const optC = document.getElementById('modal-opt-c').value;
+            const optD = document.getElementById('modal-opt-d').value;
+            const correct = document.getElementById('modal-correct').value;
+            const solution = document.getElementById('modal-solution').value;
+
+            const newTask = {
+                id: 'custom-' + Date.now(),
+                subject,
+                level,
+                question,
+                options: [optA, optB, optC, optD],
+                correct,
+                solution,
+                points: level === '8 түвшин' ? 40 : (level === '6-7 түвшин' ? 30 : (level === '4-5 түвшин' ? 20 : 10))
+            };
+
+            tasks.push(newTask);
+            saveTasks();
+            toggleAddTaskModal(false);
+            document.getElementById('add-task-form').reset();
+            
+            currentSubject = subject;
+            currentLevel = level;
+            renderSubjectTabs();
+            renderLevelButtons();
+            renderTasks();
+            updateStats();
+
+            alert('Шинэ даалгавар амжилттай байршлаа!');
+        }
+
+        // Web Audio Synthesizer for Immediate Sound Feedback
+        function playAudioNotification(isSuccess) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (isSuccess) {
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.15); // E5
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else {
+                    osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+                    osc.frequency.exponentialRampToValueAtTime(164.81, ctx.currentTime + 0.2); // E3
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch(e) {
+                // Audio Context fallback if blocked
+            }
+        }
+    </script>
+</body>
+</html>
